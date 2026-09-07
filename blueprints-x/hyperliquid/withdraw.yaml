@@ -1,0 +1,38 @@
+protocol: hyperliquid
+constants:
+  core_writer:
+    type: address
+    value: '0x3333333333333333333333333333333333333333'
+  usdc_system_address:
+    type: address
+    value: '0x2000000000000000000000000000000000000000'
+  hyperliquid_helper:
+    type: address
+    value: '0x694B33EC7Ae7f9F402F2b5FC17063C03222f5809'
+actions:
+  withdraw_usdc_to_evm:
+    calls:
+    - description: Encode spot send action (HyperCore spot -> HyperEVM)
+      target: ${constants.hyperliquid_helper}
+      selector: encodeSpotSend(address,uint64,uint64)
+      parameters:
+      - type: address
+        value: ${constants.usdc_system_address}
+      - type: uint256
+        value: '0'
+      - type: uint256
+        value: ${input_slots.withdraw_amount_wei}
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Execute spot -> HyperEVM withdrawal via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      withdraw_amount_wei:
+        type: uint256
+        description: USDC amount to withdraw in weiDecimals (8 decimals, 1 USDC =
+          100000000)

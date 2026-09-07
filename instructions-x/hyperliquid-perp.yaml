@@ -1,0 +1,56 @@
+- name: place_limit_order
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/order.yaml:place_limit_order
+    inputs:
+      asset:
+        type: uint256
+        value: ${position.asset}
+      math_helper:
+        type: address
+        value: '0x8853b15faa49e90bb755ddb15bc5cf36a8312004'
+      sz_scale_factor:
+        type: uint256
+        value: ${position.sz_scale_factor}
+- name: cancel_order
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/order.yaml:cancel_order
+    inputs:
+      asset:
+        type: uint256
+        value: ${position.asset}
+- name: cancel_order_by_oid
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/order.yaml:cancel_order_by_oid
+    inputs:
+      asset:
+        type: uint256
+        value: ${position.asset}
+- name: close_position
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/order.yaml:close_position
+    inputs:
+      asset:
+        type: uint256
+        value: ${position.asset}
+      math_helper:
+        type: address
+        value: '0x8853b15faa49e90bb755ddb15bc5cf36a8312004'
+      sz_scale_factor:
+        type: uint256
+        value: ${position.sz_scale_factor}

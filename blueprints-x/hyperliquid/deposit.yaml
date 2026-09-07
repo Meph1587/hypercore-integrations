@@ -1,0 +1,36 @@
+protocol: hyperliquid
+constants:
+  usdc_address:
+    type: address
+    value: '0xb88339CB7199b77E23DB6E890353E22632Ba630f'
+  core_deposit_wallet:
+    type: address
+    value: '0x6b9e773128f453f5c2c60935ee2de2cbc5390a24'
+inputs:
+  recipient:
+    type: address
+actions:
+  deposit_usdc_for_perp:
+    calls:
+    - description: Approve USDC spending by CoreDepositWallet
+      target: ${constants.usdc_address}
+      selector: approve(address,uint256)
+      parameters:
+      - type: address
+        value: ${constants.core_deposit_wallet}
+      - type: uint256
+        value: ${input_slots.usdc_amount}
+    - description: Deposit USDC into the recipient's HyperCore perp wallet
+      target: ${constants.core_deposit_wallet}
+      selector: depositFor(address,uint256,uint32)
+      parameters:
+      - type: address
+        value: ${inputs.recipient}
+      - type: uint256
+        value: ${input_slots.usdc_amount}
+      - type: uint256
+        value: '0'
+    input_slots:
+      usdc_amount:
+        type: uint256
+        description: USDC amount to deposit (6 decimals, 1 USDC = 1000000)

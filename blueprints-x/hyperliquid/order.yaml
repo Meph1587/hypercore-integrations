@@ -1,0 +1,208 @@
+protocol: hyperliquid
+constants:
+  core_writer:
+    type: address
+    value: '0x3333333333333333333333333333333333333333'
+  hyperliquid_helper:
+    type: address
+    value: '0x694B33EC7Ae7f9F402F2b5FC17063C03222f5809'
+inputs:
+  asset:
+    type: uint256
+  math_helper:
+    type: address
+  sz_scale_factor:
+    type: uint256
+actions:
+  place_limit_order:
+    calls:
+    - description: "Scale price from USDC 6 decimals to wire format (\xD7100)"
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.limit_px}
+      - type: uint256
+        value: '100'
+      - type: uint256
+        value: '1'
+      return:
+        name: limit_px_wire
+        type: uint256
+    - description: Scale size from szDecimals to wire format
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.sz}
+      - type: uint256
+        value: ${inputs.sz_scale_factor}
+      - type: uint256
+        value: '1'
+      return:
+        name: sz_wire
+        type: uint256
+    - description: Encode limit order for CoreWriter
+      target: ${constants.hyperliquid_helper}
+      selector: encodeLimitOrder(uint32,bool,uint64,uint64,bool,uint8,uint8)
+      parameters:
+      - type: uint256
+        value: ${inputs.asset}
+      - type: bool
+        value: ${input_slots.is_buy}
+      - type: uint256
+        value: ${returns.limit_px_wire}
+      - type: uint256
+        value: ${returns.sz_wire}
+      - type: bool
+        value: ${input_slots.reduce_only}
+      - type: uint256
+        value: ${input_slots.tif}
+      - type: uint256
+        value: ${input_slots.slot}
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Send limit order via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      is_buy:
+        type: bool
+        description: True for long/buy, false for short/sell
+      limit_px:
+        type: uint256
+        description: Limit price in USDC 6 decimals (e.g., $20 = 20000000, $60000
+          = 60000000000)
+      sz:
+        type: uint256
+        description: Size in szDecimals (e.g., 0.5 HYPE = 50 with szDec=2, 0.01 BTC
+          = 1000 with szDec=5)
+      reduce_only:
+        type: bool
+        description: If true, can only reduce existing position
+      tif:
+        type: uint256
+        description: 'Time-in-force: 1=ALO (post-only), 2=GTC, 3=IOC'
+      slot:
+        type: uint256
+        description: 'Order slot: 0=main, 1=stop-loss, 2=take-profit'
+  cancel_order:
+    calls:
+    - description: Encode cancel order by CLOID
+      target: ${constants.hyperliquid_helper}
+      selector: encodeCancelOrder(uint32,uint8)
+      parameters:
+      - type: uint256
+        value: ${inputs.asset}
+      - type: uint256
+        value: ${input_slots.slot}
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Send cancel order via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      slot:
+        type: uint256
+        description: 'Order slot to cancel: 0=main, 1=stop-loss, 2=take-profit'
+  cancel_order_by_oid:
+    calls:
+    - description: Encode cancel order by OID
+      target: ${constants.hyperliquid_helper}
+      selector: encodeCancelOrderByOid(uint32,uint64)
+      parameters:
+      - type: uint256
+        value: ${inputs.asset}
+      - type: uint256
+        value: ${input_slots.oid}
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Send cancel order via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      oid:
+        type: uint256
+        description: Order ID from HyperCore
+  close_position:
+    calls:
+    - description: "Scale price from USDC 6 decimals to wire format (\xD7100)"
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.limit_px}
+      - type: uint256
+        value: '100'
+      - type: uint256
+        value: '1'
+      return:
+        name: limit_px_wire
+        type: uint256
+    - description: Scale size from szDecimals to wire format
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.sz}
+      - type: uint256
+        value: ${inputs.sz_scale_factor}
+      - type: uint256
+        value: '1'
+      return:
+        name: sz_wire
+        type: uint256
+    - description: Encode limit order for CoreWriter
+      target: ${constants.hyperliquid_helper}
+      selector: encodeLimitOrder(uint32,bool,uint64,uint64,bool,uint8,uint8)
+      parameters:
+      - type: uint256
+        value: ${inputs.asset}
+      - type: bool
+        value: ${input_slots.is_buy}
+      - type: uint256
+        value: ${returns.limit_px_wire}
+      - type: uint256
+        value: ${returns.sz_wire}
+      - type: bool
+        value: 'true'
+      - type: uint256
+        value: '3'
+      - type: uint256
+        value: ${input_slots.slot}
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Send limit order via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      is_buy:
+        type: bool
+        description: True for long/buy, false for short/sell
+      limit_px:
+        type: uint256
+        description: Limit price in USDC 6 decimals (e.g., $20 = 20000000, $60000
+          = 60000000000)
+      sz:
+        type: uint256
+        description: Size in szDecimals (e.g., 0.5 HYPE = 50 with szDec=2, 0.01 BTC
+          = 1000 with szDec=5)
+      slot:
+        type: uint256
+        description: 'Order slot: 0=main, 1=stop-loss, 2=take-profit'

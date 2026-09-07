@@ -1,0 +1,35 @@
+- name: deposit_usdc_for_perp
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/deposit.yaml:deposit_usdc_for_perp
+    inputs:
+      recipient:
+        type: address
+        value: ${config.caliber_address}
+- name: transfer_usdc_spot_to_perp
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/transfer.yaml:transfer_usdc_spot_to_perp
+    inputs: {}
+- name: transfer_usdc_perp_to_spot
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/transfer.yaml:transfer_usdc_perp_to_spot
+    inputs: {}
+- name: withdraw_usdc_to_evm
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/withdraw.yaml:withdraw_usdc_to_evm
+    inputs: {}

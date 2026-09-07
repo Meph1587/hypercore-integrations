@@ -1,0 +1,57 @@
+protocol: hyperliquid
+constants:
+  core_writer:
+    type: address
+    value: '0x3333333333333333333333333333333333333333'
+  hyperliquid_helper:
+    type: address
+    value: '0x694B33EC7Ae7f9F402F2b5FC17063C03222f5809'
+actions:
+  transfer_usdc_spot_to_perp:
+    calls:
+    - description: Encode USD class transfer action (spot -> perp)
+      target: ${constants.hyperliquid_helper}
+      selector: encodeUsdClassTransfer(uint64,bool)
+      parameters:
+      - type: uint256
+        value: ${input_slots.transfer_amount}
+      - type: bool
+        value: 'true'
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Execute spot -> perp transfer via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      transfer_amount:
+        type: uint256
+        description: USDC amount to transfer from spot to perp (6 decimals, 1 USDC
+          = 1000000)
+  transfer_usdc_perp_to_spot:
+    calls:
+    - description: Encode USD class transfer action (perp -> spot)
+      target: ${constants.hyperliquid_helper}
+      selector: encodeUsdClassTransfer(uint64,bool)
+      parameters:
+      - type: uint256
+        value: ${input_slots.transfer_amount}
+      - type: bool
+        value: 'false'
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Execute perp -> spot transfer via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      transfer_amount:
+        type: uint256
+        description: USDC amount to transfer from perp to spot (6 decimals, 1 USDC
+          = 1000000)
