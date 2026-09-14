@@ -12,12 +12,18 @@ constants:
 actions:
   withdraw_usdc_to_evm:
     calls:
-    - description: Encode spot send action (HyperCore spot -> HyperEVM)
+    - description: Encode send asset action (HyperCore spot -> HyperEVM)
       target: ${constants.hyperliquid_helper}
-      selector: encodeSpotSend(address,uint64,uint64)
+      selector: encodeSendAsset(address,address,uint32,uint32,uint64,uint64)
       parameters:
       - type: address
         value: ${constants.usdc_system_address}
+      - type: address
+        value: '0x0000000000000000000000000000000000000000'
+      - type: uint256
+        value: '4294967295'
+      - type: uint256
+        value: '4294967295'
       - type: uint256
         value: '0'
       - type: uint256
