@@ -27,7 +27,7 @@ actions:
       - type: uint256
         value: '0'
       - type: uint256
-        value: ${input_slots.withdraw_amount_wei}
+        value: ${input_slots.withdraw_amount_core_usdc}
       return:
         name: encoded_action
         type: bytes
@@ -38,7 +38,8 @@ actions:
       - type: bytes
         value: ${returns.encoded_action}
     input_slots:
-      withdraw_amount_wei:
+      withdraw_amount_core_usdc:
         type: uint256
-        description: USDC amount to withdraw in weiDecimals (8 decimals, 1 USDC =
-          100000000)
+        description: USDC amount to withdraw, in HyperCore spot units (8 decimals,
+          1 USDC = 100000000). Not the 6-decimal HyperEVM USDC unit that the
+          deposit and transfer slots use.
