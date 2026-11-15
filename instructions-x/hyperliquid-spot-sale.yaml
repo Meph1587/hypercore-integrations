@@ -1,0 +1,17 @@
+- name: sell_spot
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/order.yaml:sell_spot
+    inputs:
+      asset:
+        type: uint256
+        value: ${position.asset}
+      math_helper:
+        type: address
+        value: '0x8853b15faa49e90bb755ddb15bc5cf36a8312004'
+      sz_scale_factor:
+        type: uint256
+        value: ${position.sz_scale_factor}
