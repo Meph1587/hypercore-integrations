@@ -206,3 +206,68 @@ actions:
       slot:
         type: uint256
         description: 'Order slot: 0=main, 1=stop-loss, 2=take-profit'
+  sell_spot:
+    calls:
+    - description: "Scale price from USDC 6 decimals to wire format (\xD7100)"
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.limit_px}
+      - type: uint256
+        value: '100'
+      - type: uint256
+        value: '1'
+      return:
+        name: limit_px_wire
+        type: uint256
+    - description: Scale size from szDecimals to wire format
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.sz}
+      - type: uint256
+        value: ${inputs.sz_scale_factor}
+      - type: uint256
+        value: '1'
+      return:
+        name: sz_wire
+        type: uint256
+    - description: Encode a sell-only IOC spot order for CoreWriter (side, reduce-only, tif and slot fixed)
+      target: ${constants.hyperliquid_helper}
+      selector: encodeLimitOrder(uint32,bool,uint64,uint64,bool,uint8,uint8)
+      parameters:
+      - type: uint256
+        value: ${inputs.asset}
+      - type: bool
+        value: 'false'
+      - type: uint256
+        value: ${returns.limit_px_wire}
+      - type: uint256
+        value: ${returns.sz_wire}
+      - type: bool
+        value: 'false'
+      - type: uint256
+        value: '3'
+      - type: uint256
+        value: '0'
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Send the spot sell order via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      limit_px:
+        type: uint256
+        description: Lowest acceptable price in USDC 6 decimals (e.g., $20 = 20000000).
+          The order sells immediately at this price or better (IOC); any unfilled
+          size is cancelled, never left resting
+      sz:
+        type: uint256
+        description: Size to sell in the token's szDecimals (e.g., 0.5 HYPE = 50 with
+          szDec=2)
