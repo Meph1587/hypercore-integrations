@@ -13,6 +13,8 @@ inputs:
     type: address
   sz_scale_factor:
     type: uint256
+  fixed_sz:
+    type: uint256
 actions:
   place_limit_order:
     calls:
@@ -271,3 +273,64 @@ actions:
         type: uint256
         description: Size to sell in the token's szDecimals (e.g., 0.5 HYPE = 50 with
           szDec=2)
+  buy_spot:
+    calls:
+    - description: "Scale price from USDC 6 decimals to wire format (\xD7100)"
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${input_slots.limit_px}
+      - type: uint256
+        value: '100'
+      - type: uint256
+        value: '1'
+      return:
+        name: limit_px_wire
+        type: uint256
+    - description: Scale the leaf's fixed size from szDecimals to wire format
+      target: ${inputs.math_helper}
+      selector: mulDiv(uint256,uint256,uint256)
+      parameters:
+      - type: uint256
+        value: ${inputs.fixed_sz}
+      - type: uint256
+        value: ${inputs.sz_scale_factor}
+      - type: uint256
+        value: '1'
+      return:
+        name: sz_wire
+        type: uint256
+    - description: Encode a buy-only IOC spot order for CoreWriter (side, size, reduce-only, tif and slot fixed)
+      target: ${constants.hyperliquid_helper}
+      selector: encodeLimitOrder(uint32,bool,uint64,uint64,bool,uint8,uint8)
+      parameters:
+      - type: uint256
+        value: ${inputs.asset}
+      - type: bool
+        value: 'true'
+      - type: uint256
+        value: ${returns.limit_px_wire}
+      - type: uint256
+        value: ${returns.sz_wire}
+      - type: bool
+        value: 'false'
+      - type: uint256
+        value: '3'
+      - type: uint256
+        value: '0'
+      return:
+        name: encoded_action
+        type: bytes
+    - description: Send the spot buy order via CoreWriter
+      target: ${constants.core_writer}
+      selector: sendRawAction(bytes)
+      parameters:
+      - type: bytes
+        value: ${returns.encoded_action}
+    input_slots:
+      limit_px:
+        type: uint256
+        description: Highest acceptable price in USDC 6 decimals (e.g., $20 = 20000000).
+          The order buys the leaf's fixed size immediately at this price or better
+          (IOC); any unfilled size is cancelled, never left resting

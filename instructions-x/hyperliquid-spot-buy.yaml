@@ -1,0 +1,23 @@
+# Buy-only HyperCore spot purchase with the size pinned in the leaf. The agent
+# supplies only the limit price; side, size, tif (IOC) and slot are fixed, so the
+# root authorizes exactly one bounded purchase per call. Repetition is permitted.
+- name: buy_spot
+  is_debt: false
+  instruction_type: HARVEST
+  affected_tokens: []
+  instruction:
+    label: ${position.label}
+    path: ../../../blueprints-x/hyperliquid/order.yaml:buy_spot
+    inputs:
+      asset:
+        type: uint256
+        value: ${position.asset}
+      math_helper:
+        type: address
+        value: '0x8853b15faa49e90bb755ddb15bc5cf36a8312004'
+      sz_scale_factor:
+        type: uint256
+        value: ${position.sz_scale_factor}
+      fixed_sz:
+        type: uint256
+        value: ${position.sz}
