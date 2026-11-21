@@ -13,8 +13,6 @@ inputs:
     type: address
   sz_scale_factor:
     type: uint256
-  fixed_sz:
-    type: uint256
 actions:
   place_limit_order:
     calls:
@@ -288,12 +286,12 @@ actions:
       return:
         name: limit_px_wire
         type: uint256
-    - description: Scale the leaf's fixed size from szDecimals to wire format
+    - description: Scale size from szDecimals to wire format
       target: ${inputs.math_helper}
       selector: mulDiv(uint256,uint256,uint256)
       parameters:
       - type: uint256
-        value: ${inputs.fixed_sz}
+        value: ${input_slots.sz}
       - type: uint256
         value: ${inputs.sz_scale_factor}
       - type: uint256
@@ -301,7 +299,7 @@ actions:
       return:
         name: sz_wire
         type: uint256
-    - description: Encode a buy-only IOC spot order for CoreWriter (side, size, reduce-only, tif and slot fixed)
+    - description: Encode a buy-only IOC spot order for CoreWriter (side, reduce-only, tif and slot fixed)
       target: ${constants.hyperliquid_helper}
       selector: encodeLimitOrder(uint32,bool,uint64,uint64,bool,uint8,uint8)
       parameters:
@@ -332,5 +330,9 @@ actions:
       limit_px:
         type: uint256
         description: Highest acceptable price in USDC 6 decimals (e.g., $20 = 20000000).
-          The order buys the leaf's fixed size immediately at this price or better
-          (IOC); any unfilled size is cancelled, never left resting
+          The order buys immediately at this price or better (IOC); any unfilled
+          size is cancelled, never left resting
+      sz:
+        type: uint256
+        description: Size to buy in the token's szDecimals (e.g., 0.5 HYPE = 50 with
+          szDec=2). The spot order must be worth at least 10 USDC

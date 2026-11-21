@@ -1,6 +1,5 @@
-# Buy-only HyperCore spot purchase with the size pinned in the leaf. The agent
-# supplies only the limit price; side, size, tif (IOC) and slot are fixed, so the
-# root authorizes exactly one bounded purchase per call. Repetition is permitted.
+# Buy-only HyperCore spot purchase. The agent supplies the limit price and size;
+# side, tif (IOC) and slot are fixed. Mirror of hyperliquid-spot-sale.
 - name: buy_spot
   is_debt: false
   instruction_type: HARVEST
@@ -18,6 +17,3 @@
       sz_scale_factor:
         type: uint256
         value: ${position.sz_scale_factor}
-      fixed_sz:
-        type: uint256
-        value: ${position.sz}
